@@ -93,11 +93,6 @@ def clustergram(data=None, row_labels=None, col_labels=None,
 
 	## plot color legend
 	display_range = float(display_range)
-	### Scale the max and min colors so that 0 is white/black
-	vmin = data.min()
-	vmax = data.max()
-	vmax = max([vmax,abs(vmin)])
-	vmin = vmax*-1
 	norm = mpl.colors.Normalize(-display_range, display_range)
 	axcb = fig.add_axes(rectcb, frame_on=False)
 	step = display_range/3
@@ -111,7 +106,6 @@ def clustergram(data=None, row_labels=None, col_labels=None,
 	data_clustered = data
 	data_clustered = data_clustered[:,idx2]
 	data_clustered = data_clustered[idx1,:]
-
 	im = axm.matshow(data_clustered, aspect='auto', origin='lower',cmap=cmap, norm=norm)
 	axm.set_xticks([])
 	axm.set_yticks([])
