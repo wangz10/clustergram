@@ -4,6 +4,11 @@ A clustergram function similar to MATLAB clustergram()
 Author: Zichen Wang
 Created on 4/7/2014
 
+Major enhancement: enables group labels for rows and columns, which can be useful to 
+directly visualize whether the hierarchical clustering outcome agree with inherent 
+catagories of samples.
+
+
 References:
 
 https://code.activestate.com/recipes/578834-hierarchical-clustering-heatmap-python/
@@ -44,36 +49,32 @@ def clustergram(data=None, row_labels=None, col_labels=None,
 	fig = plt.figure(figsize=(default_window_width, default_window_hight)) ### could use m,n to scale here
 	color_bar_w = 0.01 
 	group_bar_w = 0.01
-	heatmap_w = 0.6
-	heatmap_h = 0.6
+	heatmap_w = 0.5
+	heatmap_h = 0.7
 	dendrogram_l = 0.15
 	color_legend_w = 0.18
 	color_legend_h = 0.09
 	margin = 0.01
-	fig_margin = 0.10
+	fig_margin_l = 0.05
+	fig_margin_b = 0.10
 	## calculate positions for all elements
 	# ax1, placement of dendrogram 1, on the left of the heatmap
-	rect1 = [fig_margin, fig_margin, dendrogram_l, heatmap_h]
-
+	rect1 = [fig_margin_l, fig_margin_b, dendrogram_l, heatmap_h]
 	# axr, placement of row side colorbar
-	rectr = [fig_margin + dendrogram_l, fig_margin, color_bar_w, heatmap_h]
-
+	rectr = [fig_margin_l + dendrogram_l, fig_margin_b, color_bar_w, heatmap_h]
 	# axc, placement of column side colorbar
-	rectc = [fig_margin + dendrogram_l + group_bar_w + margin, heatmap_h + fig_margin + margin, heatmap_w, color_bar_w]
-
+	rectc = [fig_margin_l + dendrogram_l + group_bar_w + margin, heatmap_h + fig_margin_b + margin, heatmap_w, color_bar_w]
 	# axm, placement of heatmap
-	rectm = [fig_margin + dendrogram_l + group_bar_w + margin, fig_margin, heatmap_w, heatmap_h]
-
+	rectm = [fig_margin_l + dendrogram_l + group_bar_w + margin, fig_margin_b, heatmap_w, heatmap_h]
 	# ax2, placement of dendrogram 2, on the top of the heatmap
-	rect2 = [fig_margin + dendrogram_l + group_bar_w + margin, fig_margin + heatmap_w + group_bar_w, heatmap_w, dendrogram_l] ### last one controls hight of the dendrogram
-
+	rect2 = [fig_margin_l + dendrogram_l + group_bar_w + margin, fig_margin_b + heatmap_h + group_bar_w, heatmap_w, dendrogram_l] ### last one controls hight of the dendrogram
 	# axcb - placement of the color legend
-	rectcb = [0.05,0.90,0.18,0.09]
+	rectcb = [0.05,0.85,0.15,0.08]
 
 	## compute pdist for rows:
 	d1 = dist.pdist(data, metric=row_pdist)
 	D1 = dist.squareform(d1)
-	ax1 = fig.add_axes(rect1, frame_on=True)
+	ax1 = fig.add_axes(rect1, frame_on=False)
 	Y1 = sch.linkage(D1, method=row_linkage, metric=row_pdist)
 	Z1 = sch.dendrogram(Y1, orientation='right')
 	idx1 = Z1['leaves']
@@ -83,7 +84,7 @@ def clustergram(data=None, row_labels=None, col_labels=None,
 	## compute pdist for cols
 	d2 = dist.pdist(data.T, metric=col_pdist)
 	D2 = dist.squareform(d2)
-	ax2 = fig.add_axes(rect2, frame_on=True)
+	ax2 = fig.add_axes(rect2, frame_on=False)
 	Y2 = sch.linkage(D2, method=col_linkage, metric=col_pdist)
 	Z2 = sch.dendrogram(Y2)
 	idx2 = Z2['leaves']
@@ -139,41 +140,53 @@ def clustergram(data=None, row_labels=None, col_labels=None,
 	for i, group_name in enumerate(uniq_col_groups):
 		d_col_group[group_name] = i
 	
-	# cmap_group = mpl.colors.ListedColormap(['r', 'g', 'b', 'y', 'w', 'k', 'm'])
-	cmap_col_groups = plt.cm.flag
-	cmap_row_groups = plt.cm.prism
+	## config group colors and cmaps
+	colors_col_groups = []
+	colors_row_groups = []
+	for i in range(len(d_col_group)):
+		colors_col_groups.append(np.random.rand(3,1)) ## a list of random colors
+	for i in range(len(d_row_group)):
+		colors_row_groups.append(np.random.rand(3,1)) 
+	cmap_col_groups = mpl.colors.ListedColormap(colors_col_groups)
+	cmap_row_groups = mpl.colors.ListedColormap(colors_row_groups) ## make color lists into cmap for matshow
 
+	## row group color label:
 	axr = fig.add_axes(rectr)
 	new_row_group = np.array([d_row_group[row_groups[idx1[i]]] for i in range(data.shape[0])])
 	new_row_group.shape = (len(idx1), 1)
-	axr.matshow(new_row_group, aspect='auto', origin='lower', cmap=cmap_row_groups)
+	rmat = axr.matshow(new_row_group, aspect='auto', origin='lower', cmap=cmap_row_groups)
 	axr.set_xticks([])
 	axr.set_yticks([])
 
 	axc = fig.add_axes(rectc)
 	new_col_group = np.array([d_col_group[col_groups[idx2[i]]] for i in range(data.shape[1])])
 	new_col_group.shape = (1, len(idx2))	
-	axc.matshow(new_col_group, aspect='auto', origin='lower', cmap=cmap_col_groups)
+	cmat = axc.matshow(new_col_group, aspect='auto', origin='lower', cmap=cmap_col_groups)
 	axc.set_xticks([])
 	axc.set_yticks([])
 
-	## axgl for group label legends
-	axgl = fig.add_axes([0.8,0.5,0.15,0.3])
-	circle1 = mpl.patches.Circle((0,0), radius=0.1, color='#EB70AA')
-	axgl.add_patch(circle1)
-	axgl.set_xticks([])
-	axgl.set_yticks([])
+	## axglr: placement for row group label legends
+	axglr = fig.add_axes([0.8, fig_margin_b, 0.05, 0.3], frame_on=False)
+	rcbar = fig.colorbar(rmat, cax=axglr, ticks=range(len(d_row_group)))
+	rcbar.set_label('row groups')
+	rcbar.set_ticklabels(d_row_group.keys())
+	rcbar.update_ticks()
 
-
+	## axglc: placement for col group label legends
+	axglc = fig.add_axes([0.8, 0.5, 0.05, 0.3], frame_on=False)
+	ccbar = fig.colorbar(cmat, cax=axglc, ticks=range(len(d_col_group)))
+	ccbar.set_label('column groups')
+	ccbar.set_ticklabels(d_col_group.keys())
+	ccbar.update_ticks()
 	plt.show()
+
 
 
 ## test:
 
-data = np.arange(0,14,1).reshape(2,7)
 
-clustergram(data=np.random.rand(4,3), row_labels=['a','c','e','d'], col_labels=['1','2','3'],
-			row_groups=['A','B','C','C'], col_groups=['1','1','2'],
+clustergram(data=np.random.rand(4,6), row_labels=['a','c','e','d'], col_labels=['1','2','3','4','5','6'],
+			row_groups=['A','B','C','C'], col_groups=['1','2','3','4','5','6'],
 			row_linkage='average', col_linkage='average', 
 			row_pdist='euclidean', col_pdist='euclidean',
 			standardize=3, log=False, colormap='redbluecmap',
