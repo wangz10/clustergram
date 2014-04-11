@@ -8,12 +8,10 @@ Major enhancement: enables group labels for rows and columns, which can be usefu
 directly visualize whether the hierarchical clustering outcome agree with inherent 
 catagories of samples.
 
-
 References:
 
 https://code.activestate.com/recipes/578834-hierarchical-clustering-heatmap-python/
 http://www.mathworks.com/help/bioinfo/ref/clustergram.html
-
 """
 import numpy as np
 import scipy.cluster.hierarchy as sch
@@ -175,17 +173,4 @@ def clustergram(data=None, row_labels=None, col_labels=None,
 		ccbar.set_label('column groups')
 		ccbar.set_ticklabels(d_col_group.keys())
 		ccbar.update_ticks()
-
 	plt.show()
-
-
-
-## test:
-
-
-# clustergram(data=np.random.rand(4,6), row_labels=['a','c','e','d'], col_labels=['1','2','3','4','5','6'],
-# 			row_groups=['A','B','C','C'], col_groups=['1','2','3','4','5','6'],
-# 			row_linkage='average', col_linkage='average', 
-# 			row_pdist='euclidean', col_pdist='euclidean',
-# 			standardize=3, log=False, colormap='redbluecmap',
-# 			display_range=3)
