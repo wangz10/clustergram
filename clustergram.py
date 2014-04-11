@@ -15,7 +15,6 @@ https://code.activestate.com/recipes/578834-hierarchical-clustering-heatmap-pyth
 http://www.mathworks.com/help/bioinfo/ref/clustergram.html
 
 """
-
 import numpy as np
 import scipy.cluster.hierarchy as sch
 import scipy.spatial.distance as dist
@@ -29,6 +28,7 @@ def clustergram(data=None, row_labels=None, col_labels=None,
 			row_pdist='euclidean', col_pdist='euclidean',
 			standardize=None, log=False, colormap='redbluecmap',
 			display_range=3):
+	
 	## preprocess data
 	if log:
 		data = np.log2(data + 1.0)
@@ -130,54 +130,58 @@ def clustergram(data=None, row_labels=None, col_labels=None,
 
 	## plot group colors
 	# numerize group names
-	uniq_row_groups = list(set(row_groups))
-	d_row_group = {} 
-	for i, group_name in enumerate(uniq_row_groups):
-		d_row_group[group_name] = i
+	if row_groups != None:
+		uniq_row_groups = list(set(row_groups))
+		d_row_group = {} 
+		for i, group_name in enumerate(uniq_row_groups):
+			d_row_group[group_name] = i
 
-	uniq_col_groups = list(set(col_groups))
-	d_col_group = {} 
-	for i, group_name in enumerate(uniq_col_groups):
-		d_col_group[group_name] = i
-	
-	## config group colors and cmaps
-	colors_col_groups = []
-	colors_row_groups = []
-	for i in range(len(d_col_group)):
-		colors_col_groups.append(np.random.rand(3,1)) ## a list of random colors
-	for i in range(len(d_row_group)):
-		colors_row_groups.append(np.random.rand(3,1)) 
-	cmap_col_groups = mpl.colors.ListedColormap(colors_col_groups)
-	cmap_row_groups = mpl.colors.ListedColormap(colors_row_groups) ## make color lists into cmap for matshow
+		colors_row_groups = []
+		for i in range(len(d_row_group)):
+			colors_row_groups.append(np.random.rand(3,1)) 
+		cmap_row_groups = mpl.colors.ListedColormap(colors_row_groups) ## make color lists into cmap for matshow
 
-	## row group color label:
-	axr = fig.add_axes(rectr)
-	new_row_group = np.array([d_row_group[row_groups[idx1[i]]] for i in range(data.shape[0])])
-	new_row_group.shape = (len(idx1), 1)
-	rmat = axr.matshow(new_row_group, aspect='auto', origin='lower', cmap=cmap_row_groups)
-	axr.set_xticks([])
-	axr.set_yticks([])
+		## row group color label:
+		axr = fig.add_axes(rectr)
+		new_row_group = np.array([d_row_group[row_groups[idx1[i]]] for i in range(data.shape[0])])
+		new_row_group.shape = (len(idx1), 1)
+		rmat = axr.matshow(new_row_group, aspect='auto', origin='lower', cmap=cmap_row_groups)
+		axr.set_xticks([])
+		axr.set_yticks([])
 
-	axc = fig.add_axes(rectc)
-	new_col_group = np.array([d_col_group[col_groups[idx2[i]]] for i in range(data.shape[1])])
-	new_col_group.shape = (1, len(idx2))	
-	cmat = axc.matshow(new_col_group, aspect='auto', origin='lower', cmap=cmap_col_groups)
-	axc.set_xticks([])
-	axc.set_yticks([])
+		## axglr: placement for row group label legends
+		axglr = fig.add_axes([0.8, fig_margin_b, 0.05, 0.3], frame_on=False)
+		rcbar = fig.colorbar(rmat, cax=axglr, ticks=range(len(d_row_group)))
+		rcbar.set_label('row groups')
+		rcbar.set_ticklabels(d_row_group.keys())
+		rcbar.update_ticks()
 
-	## axglr: placement for row group label legends
-	axglr = fig.add_axes([0.8, fig_margin_b, 0.05, 0.3], frame_on=False)
-	rcbar = fig.colorbar(rmat, cax=axglr, ticks=range(len(d_row_group)))
-	rcbar.set_label('row groups')
-	rcbar.set_ticklabels(d_row_group.keys())
-	rcbar.update_ticks()
+	if col_groups != None:
+		uniq_col_groups = list(set(col_groups))
+		d_col_group = {} 
+		for i, group_name in enumerate(uniq_col_groups):
+			d_col_group[group_name] = i
+		
+		## config group colors and cmaps
+		colors_col_groups = []
+		for i in range(len(d_col_group)):
+			colors_col_groups.append(np.random.rand(3,1)) ## a list of random colors
+		cmap_col_groups = mpl.colors.ListedColormap(colors_col_groups)
 
-	## axglc: placement for col group label legends
-	axglc = fig.add_axes([0.8, 0.5, 0.05, 0.3], frame_on=False)
-	ccbar = fig.colorbar(cmat, cax=axglc, ticks=range(len(d_col_group)))
-	ccbar.set_label('column groups')
-	ccbar.set_ticklabels(d_col_group.keys())
-	ccbar.update_ticks()
+		axc = fig.add_axes(rectc)
+		new_col_group = np.array([d_col_group[col_groups[idx2[i]]] for i in range(data.shape[1])])
+		new_col_group.shape = (1, len(idx2))	
+		cmat = axc.matshow(new_col_group, aspect='auto', origin='lower', cmap=cmap_col_groups)
+		axc.set_xticks([])
+		axc.set_yticks([])
+
+		## axglc: placement for col group label legends
+		axglc = fig.add_axes([0.8, 0.5, 0.05, 0.3], frame_on=False)
+		ccbar = fig.colorbar(cmat, cax=axglc, ticks=range(len(d_col_group)))
+		ccbar.set_label('column groups')
+		ccbar.set_ticklabels(d_col_group.keys())
+		ccbar.update_ticks()
+
 	plt.show()
 
 
@@ -185,9 +189,9 @@ def clustergram(data=None, row_labels=None, col_labels=None,
 ## test:
 
 
-clustergram(data=np.random.rand(4,6), row_labels=['a','c','e','d'], col_labels=['1','2','3','4','5','6'],
-			row_groups=['A','B','C','C'], col_groups=['1','2','3','4','5','6'],
-			row_linkage='average', col_linkage='average', 
-			row_pdist='euclidean', col_pdist='euclidean',
-			standardize=3, log=False, colormap='redbluecmap',
-			display_range=3)
+# clustergram(data=np.random.rand(4,6), row_labels=['a','c','e','d'], col_labels=['1','2','3','4','5','6'],
+# 			row_groups=['A','B','C','C'], col_groups=['1','2','3','4','5','6'],
+# 			row_linkage='average', col_linkage='average', 
+# 			row_pdist='euclidean', col_pdist='euclidean',
+# 			standardize=3, log=False, colormap='redbluecmap',
+# 			display_range=3)
