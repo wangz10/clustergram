@@ -25,7 +25,7 @@ def iClustergram(data=None, row_labels=None, col_labels=None,
 			row_linkage='average', col_linkage='average', 
 			row_pdist='euclidean', col_pdist='euclidean',
 			standardize=None, log=False, 
-			display_range=3, username=None, apikey=None):
+			display_range=3, username='wangz10', apikey='fmnoxd2t2u'):
 	## preprocess data
 	if log:
 		data = np.log2(data + 1.0)

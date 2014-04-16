@@ -25,7 +25,7 @@ def clustergram(data=None, row_labels=None, col_labels=None,
 			row_linkage='average', col_linkage='average', 
 			row_pdist='euclidean', col_pdist='euclidean',
 			standardize=3, log=False, colormap='redbluecmap',
-			display_range=3):
+			display_range=3, figsize=12, figname=None):
 	"""
 	Parameters:
 	----------
@@ -50,7 +50,10 @@ def clustergram(data=None, row_labels=None, col_labels=None,
 	log: boolean variable specifying whether to perform log transform for the data
 	colormap: options = ['redbluecmap', 'redgreencmap']
 	display_range: specifies the display range of values of data
-	
+	figsize: specifies the size of the figure
+	figname: figure name (format of figure should be specified, e.g. .png, .pdf),
+		if specified, figure will be saved instead of being shown
+
 	Example:
 	----------
 	from clustergram import clustergram
@@ -74,8 +77,8 @@ def clustergram(data=None, row_labels=None, col_labels=None,
 		cmap = plt.cm.RdYlGn
 
 	### Configure the Matplotlib figure size
-	default_window_hight = 12
-	default_window_width = 12
+	default_window_hight = figsize
+	default_window_width = figsize
 	fig = plt.figure(figsize=(default_window_width, default_window_hight)) ### could use m,n to scale here
 	color_bar_w = 0.01 
 	group_bar_w = 0.01
@@ -105,7 +108,7 @@ def clustergram(data=None, row_labels=None, col_labels=None,
 	display_range = float(display_range)
 	norm = mpl.colors.Normalize(-display_range, display_range)
 	axcb = fig.add_axes(rectcb, frame_on=False)
-	step = display_range/3
+	step = display_range/2
 	bounds = np.arange(-display_range, display_range+step, step)
 	cb = mpl.colorbar.ColorbarBase(axcb, cmap=cmap, norm=norm, 
 		orientation='horizontal', ticks=bounds, spacing='proportional', extend='both')
@@ -220,7 +223,9 @@ def clustergram(data=None, row_labels=None, col_labels=None,
 		for i in range(data.shape[1]):
 			if len(col_labels) < 150:
 				axm.text(i, -0.8, ' '+ col_labels[i], rotation=270, verticalalignment="top") # rotation could also be degrees
-
-	plt.show()
+	if figname != None:
+		plt.savefig(figname)
+	else:
+		plt.show()
 
 
