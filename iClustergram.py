@@ -1,5 +1,7 @@
 """
 Interactive clustergram ploted with plotly API, https://plot.ly/
+Users need to supply the function with username and APIkey for plotly
+to enable this feature. 
 
 TODOs:
 Group labels are not supported yet.
@@ -17,14 +19,13 @@ import scipy.spatial.distance as dist
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from scipy.stats import zscore
-import random, string
 
 def iClustergram(data=None, row_labels=None, col_labels=None,
 			row_groups=None, col_groups=None,
 			row_linkage='average', col_linkage='average', 
 			row_pdist='euclidean', col_pdist='euclidean',
-			standardize=None, log=False, colormap='redbluecmap',
-			display_range=3):
+			standardize=None, log=False, 
+			display_range=3, username=None, apikey=None):
 	## preprocess data
 	if log:
 		data = np.log2(data + 1.0)
@@ -63,7 +64,7 @@ def iClustergram(data=None, row_labels=None, col_labels=None,
 	for i in range(data.shape[1]):
 		new_col_labels.append(col_labels[idx2[i]])
 	## plot clustered data using plotly
-	py = plotly.plotly("wangz10", "fmnoxd2t2u")
+	py = plotly.plotly(username, apikey)
 	d = {}
 	d['x'] = new_row_labels
 	d['y'] = new_col_labels
