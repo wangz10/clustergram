@@ -25,7 +25,7 @@ def clustergram(data=None, row_labels=None, col_labels=None,
 			row_linkage='average', col_linkage='average', 
 			row_pdist='euclidean', col_pdist='euclidean',
 			standardize=3, log=False, colormap='redbluecmap',
-			display_range=3, figsize=12, figname=None):
+			display_range=3, figsize=12, figname=None, colorkey='colorkey'):
 	"""
 	Parameters:
 	----------
@@ -49,10 +49,15 @@ def clustergram(data=None, row_labels=None, col_labels=None,
 					3: 'do not standardize the data'}
 	log: boolean variable specifying whether to perform log transform for the data
 	colormap: options = ['redbluecmap', 'redgreencmap']
-	display_range: specifies the display range of values of data
+	display_range: specifies the display range of values of data,
+		if number is specified:
+			display_range is zero centered
+		elif a list or tuple of two numbers:
+			display_range is the exact same range with the input
 	figsize: specifies the size of the figure
 	figname: figure name (format of figure should be specified, e.g. .png, .pdf),
 		if specified, figure will be saved instead of being shown
+	colorkey: specifies the name of the colorkey to display
 
 	Example:
 	----------
@@ -75,6 +80,8 @@ def clustergram(data=None, row_labels=None, col_labels=None,
 		cmap = plt.cm.bwr
 	elif colormap == 'redgreencmap':
 		cmap = plt.cm.RdYlGn
+	elif colormap == 'grey':
+		cmap = plt.cm.Greys
 
 	### Configure the Matplotlib figure size
 	default_window_hight = figsize
@@ -105,14 +112,20 @@ def clustergram(data=None, row_labels=None, col_labels=None,
 	rectcb = [0.05,0.85,0.15,0.08]
 
 	## plot color legend
-	display_range = float(display_range)
-	norm = mpl.colors.Normalize(-display_range, display_range)
+	if type(display_range) == int or type(display_range) == float:
+		display_range = float(display_range)
+		norm = mpl.colors.Normalize(-display_range, display_range)
+		step = display_range/2
+		bounds = np.arange(-display_range, display_range+step, step)
+	else:
+		if len(display_range) == 2:
+			norm = mpl.colors.Normalize(display_range[0], display_range[1])
+			step = (display_range[1]-display_range[0])/4.
+			bounds = np.arange(display_range[0], display_range[1]+step,step)
 	axcb = fig.add_axes(rectcb, frame_on=False)
-	step = display_range/2
-	bounds = np.arange(-display_range, display_range+step, step)
 	cb = mpl.colorbar.ColorbarBase(axcb, cmap=cmap, norm=norm, 
 		orientation='horizontal', ticks=bounds, spacing='proportional', extend='both')
-	axcb.set_title("colorkey")
+	axcb.set_title(colorkey)
 
 	if cluster: ## perform hierarchical clustering for rows and cols
 		## compute pdist for rows:
@@ -228,4 +241,19 @@ def clustergram(data=None, row_labels=None, col_labels=None,
 	else:
 		plt.show()
 
+def read_matrix(fn, sep='\t'):
+	"""
+	a function that helps quickly import data frame from text file
+	"""
+	with open (fn) as f:
+		header = f.next()
+		col_labels = header.strip().split(sep)
+		row_labels = []
+		data = []
+		for line in f:
+			sl = line.strip().split('\t')
+			row_labels.append(sl[0])
+			data.append(sl[1:])
+		data = np.array(data, dtype=float)
+	return data, col_labels, row_labels
 
