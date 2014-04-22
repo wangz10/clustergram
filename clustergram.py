@@ -89,8 +89,8 @@ def clustergram(data=None, row_labels=None, col_labels=None,
 	fig = plt.figure(figsize=(default_window_width, default_window_hight)) ### could use m,n to scale here
 	color_bar_w = 0.01 
 	group_bar_w = 0.01
-	heatmap_w = 0.5
-	heatmap_h = 0.7
+	heatmap_w = 0.7
+	heatmap_h = 0.5
 	dendrogram_l = 0.15
 	color_legend_w = 0.18
 	color_legend_h = 0.09
@@ -160,14 +160,16 @@ def clustergram(data=None, row_labels=None, col_labels=None,
 		## add labels
 		new_row_header=[]
 		new_column_header=[]
-		for i in range(data.shape[0]):
+		if row_labels is not None:
 			if len(row_labels) < 150:
-				axm.text(data.shape[1]-0.5, i, '  '+row_labels[idx1[i]])
-			new_row_header.append(row_labels[idx1[i]])
-		for i in range(data.shape[1]):
+				for i in range(data.shape[0]):
+					axm.text(data.shape[1]-0.5, i, '  '+row_labels[idx1[i]])
+					new_row_header.append(row_labels[idx1[i]])
+		if col_labels is not None:
 			if len(col_labels) < 150:
-				axm.text(i, -0.8, ' '+ col_labels[idx2[i]], rotation=270, verticalalignment="top") # rotation could also be degrees
-			new_column_header.append(col_labels[idx2[i]])
+				for i in range(data.shape[1]):
+					axm.text(i, -0.8, ' '+ col_labels[idx2[i]], rotation=270, verticalalignment="top") # rotation could also be degrees
+					new_column_header.append(col_labels[idx2[i]])
 
 		## plot group colors
 		# numerize group names
@@ -230,12 +232,14 @@ def clustergram(data=None, row_labels=None, col_labels=None,
 		axm.set_yticks([])
 
 		## add labels
-		for i in range(data.shape[0]):
+		if row_labels is not None:
 			if len(row_labels) < 150:
-				axm.text(data.shape[1]-0.5, i, '  '+row_labels[i])
-		for i in range(data.shape[1]):
+				for i in range(data.shape[0]):
+					axm.text(data.shape[1]-0.5, i, '  '+row_labels[i])
+		if col_labels is not None:
 			if len(col_labels) < 150:
-				axm.text(i, -0.8, ' '+ col_labels[i], rotation=270, verticalalignment="top") # rotation could also be degrees
+				for i in range(data.shape[1]):
+					axm.text(i, -0.8, ' '+ col_labels[i], rotation=270, verticalalignment="top") # rotation could also be degrees
 	if figname != None:
 		plt.savefig(figname)
 	else:
