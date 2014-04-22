@@ -245,6 +245,77 @@ def clustergram(data=None, row_labels=None, col_labels=None,
 	else:
 		plt.show()
 
+
+def plot_fclusters(data=None, row_labels=None, col_labels=None,
+			linkage='average', pdist='euclidean', standardize=3, log=False):
+	"""a function to plot the relationship between thresholds and number of
+	flat clusters achieved from hierarchical clustering, aims to find the optimal
+	threshold for forming clusters"""
+	## preprocess data
+	if log:
+		data = np.log2(data + 1.0)
+	if standardize == 1: # Standardize along the columns of data
+		data = zscore(data, axis=0)
+	elif standardize == 2: # Standardize along the rows of data
+		data = zscore(data, axis=1)
+
+	fig = plt.figure()
+	ax = fig.add_subplot(111)
+
+	if row_labels is not None and col_labels is None: ## only get fclusters for rows
+		d = dist.pdist(data, metric=pdist)
+	elif row_labels is None and col_labels is not None: ## only get fclusters for cols
+		d = dist.pdist(data.T, metric=pdist)
+	D = dist.squareform(d)
+	Y = sch.linkage(D, method=linkage, metric=pdist)
+	# thresholds = np.linspace(Y.min(), Y.max(), num=10, endpoint=False)
+	# thresholds = np.logspace(np.log10(Y.min()+1.), np.log10(Y.max()+1.), num=10, endpoint=False)
+	# thresholds = np.linspace(Y.min(), 2000, num=10, endpoint=False)
+	thresholds = np.linspace(10, 2000, num=10, endpoint=False)
+	num_clusters = []
+	for t in thresholds:
+		fclusters = sch.fcluster(Y, t)
+		num_clusters.append(len(set(fclusters)))
+	ax.plot(thresholds, num_clusters)
+	ax.set_xlabel('threshold for forming flat clusters')
+	ax.set_ylabel('# flat clusters')
+	# ax.set_yscale('log')
+	plt.show()
+	return
+
+def collaspe_fclusters(data=None, t=None, row_labels=None, col_labels=None,
+			linkage='average', pdist='euclidean', standardize=3, log=False):
+	"""a function to collaspe flat clusters by averaging the vectors within
+	each flat clusters achieved from hierarchical clustering"""
+	## preprocess data
+	if log:
+		data = np.log2(data + 1.0)
+	if standardize == 1: # Standardize along the columns of data
+		data = zscore(data, axis=0)
+	elif standardize == 2: # Standardize along the rows of data
+		data = zscore(data, axis=1)
+	
+	if row_labels is not None and col_labels is None: ## only get fclusters for rows
+		d = dist.pdist(data, metric=pdist)
+		axis = 1 ##!!! haven't checked whether this is correct yet
+	elif row_labels is None and col_labels is not None: ## only get fclusters for cols
+		d = dist.pdist(data.T, metric=pdist)
+		axis = 0
+	D = dist.squareform(d)
+	Y = sch.linkage(D, method=linkage, metric=pdist)
+	fclusters = sch.fcluster(Y, t)
+	fcluster_set = set(fclusters)
+	data_cf = []
+	for fc in fcluster_set:
+		mask = np.where(fclusters==fc)
+		data_t = data.T
+		vector_avg = np.average(data_t[mask],axis=axis)
+		data_cf.append(vector_avg)
+	data_cf = np.array(data_cf).T
+	return data_cf
+
+
+
 def read_matrix(fn, sep='\t'):
 	"""
 	a function that helps quickly import data frame from text file
