@@ -19,6 +19,7 @@ import scipy.spatial.distance as dist
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from scipy.stats import zscore
+from collections import Counter
 
 def clustergram(data=None, row_labels=None, col_labels=None,
 			row_groups=None, col_groups=None, cluster=True,
@@ -146,7 +147,7 @@ def clustergram(data=None, row_labels=None, col_labels=None,
 		Z2 = sch.dendrogram(Y2)
 		idx2 = Z2['leaves']
 		ax2.set_xticks([])
-		ax2.set_yticks([])
+		# ax2.set_yticks([])
 
 		## plot heatmap
 		axm = fig.add_axes(rectm)
@@ -260,7 +261,8 @@ def plot_fclusters(data=None, row_labels=None, col_labels=None,
 		data = zscore(data, axis=1)
 
 	fig = plt.figure()
-	ax = fig.add_subplot(111)
+	ax1 = fig.add_subplot(121)
+	ax2 = fig.add_subplot(122)
 
 	if row_labels is not None and col_labels is None: ## only get fclusters for rows
 		d = dist.pdist(data, metric=pdist)
@@ -268,18 +270,34 @@ def plot_fclusters(data=None, row_labels=None, col_labels=None,
 		d = dist.pdist(data.T, metric=pdist)
 	D = dist.squareform(d)
 	Y = sch.linkage(D, method=linkage, metric=pdist)
-	# thresholds = np.linspace(Y.min(), Y.max(), num=10, endpoint=False)
-	# thresholds = np.logspace(np.log10(Y.min()+1.), np.log10(Y.max()+1.), num=10, endpoint=False)
-	# thresholds = np.linspace(Y.min(), 2000, num=10, endpoint=False)
-	thresholds = np.linspace(10, 2000, num=10, endpoint=False)
+	space1 = np.linspace(d.min(), d.max(), num=5, endpoint=False)
+	space2 = np.linspace(d.max(),1.,num=30,endpoint=True)
+	thresholds = np.concatenate((space1,space2))
 	num_clusters = []
+	num_singles = []
 	for t in thresholds:
-		fclusters = sch.fcluster(Y, t)
-		num_clusters.append(len(set(fclusters)))
-	ax.plot(thresholds, num_clusters)
-	ax.set_xlabel('threshold for forming flat clusters')
-	ax.set_ylabel('# flat clusters')
-	# ax.set_yscale('log')
+		fclusters = sch.fcluster(Y, t,'distance')
+		c = Counter(fclusters)
+		num_cluster = len(c.keys())
+		num_single = c.values().count(1)
+		num_clusters.append(num_cluster)
+		num_singles.append(num_single)
+		print 'threshold=', t, 'clusters:', num_cluster, 'singles:',num_single
+		if num_cluster < 290:
+			print c
+	ax1.plot(thresholds, num_clusters,label='# of flat clusters')
+	ax1.plot(thresholds, num_singles,label='# of singles',c='r')
+	ax1.plot(thresholds, np.array(num_clusters)-np.array(num_singles),label='# of non-singles',c='g')
+	ax1.legend(loc='upper right')
+	ax1.set_xlabel('threshold for forming flat clusters')
+
+	ax2.plot(thresholds, num_clusters,label='# of flat clusters')
+	ax2.plot(thresholds, num_singles,label='# of singles',c='r')
+	ax2.plot(thresholds, np.array(num_clusters)-np.array(num_singles),label='# of non-singles',c='g')
+	ax2.legend(loc='upper right')
+	ax2.set_xlabel('threshold for forming flat clusters')
+	# ax.set_ylabel('# flat clusters')
+	ax2.set_yscale('log')
 	plt.show()
 	return
 
@@ -303,7 +321,7 @@ def collaspe_fclusters(data=None, t=None, row_labels=None, col_labels=None,
 		axis = 0
 	D = dist.squareform(d)
 	Y = sch.linkage(D, method=linkage, metric=pdist)
-	fclusters = sch.fcluster(Y, t)
+	fclusters = sch.fcluster(Y, t, 'distance')
 	fcluster_set = set(fclusters)
 	data_cf = []
 	for fc in fcluster_set:
