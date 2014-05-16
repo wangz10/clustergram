@@ -90,8 +90,9 @@ def clustergram(data=None, row_labels=None, col_labels=None,
 	fig = plt.figure(figsize=(default_window_width, default_window_hight)) ### could use m,n to scale here
 	color_bar_w = 0.01 
 	group_bar_w = 0.01
-	heatmap_w = 0.7
-	heatmap_h = 0.5
+	hw_ratio = data.shape[0]/float(data.shape[1])
+	heatmap_w = 0.5
+	heatmap_h = min(heatmap_w * hw_ratio, 0.7)
 	dendrogram_l = 0.15
 	color_legend_w = 0.18
 	color_legend_h = 0.09
@@ -147,7 +148,7 @@ def clustergram(data=None, row_labels=None, col_labels=None,
 		Z2 = sch.dendrogram(Y2)
 		idx2 = Z2['leaves']
 		ax2.set_xticks([])
-		# ax2.set_yticks([])
+		ax2.set_yticks([])
 
 		## plot heatmap
 		axm = fig.add_axes(rectm)
@@ -296,7 +297,6 @@ def plot_fclusters(data=None, row_labels=None, col_labels=None,
 	ax2.plot(thresholds, np.array(num_clusters)-np.array(num_singles),label='# of non-singles',c='g')
 	ax2.legend(loc='upper right')
 	ax2.set_xlabel('threshold for forming flat clusters')
-	# ax.set_ylabel('# flat clusters')
 	ax2.set_yscale('log')
 	plt.show()
 	return
@@ -340,7 +340,7 @@ def read_matrix(fn, sep='\t'):
 	"""
 	with open (fn) as f:
 		header = f.next()
-		col_labels = header.strip().split(sep)
+		col_labels = header.strip().split(sep)[1:]
 		row_labels = []
 		data = []
 		for line in f:
