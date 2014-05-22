@@ -86,19 +86,20 @@ def clustergram(data=None, row_labels=None, col_labels=None,
 
 	### Configure the Matplotlib figure size
 	default_window_hight = figsize
-	default_window_width = figsize
+	default_window_width = figsize  * 1.8
 	fig = plt.figure(figsize=(default_window_width, default_window_hight)) ### could use m,n to scale here
-	color_bar_w = 0.01 
-	group_bar_w = 0.01
+	color_bar_w = 0.01
+	group_bar_w = 0.01 
 	hw_ratio = data.shape[0]/float(data.shape[1])
 	heatmap_w = 0.5
-	heatmap_h = min(heatmap_w * hw_ratio, 0.7)
-	dendrogram_l = 0.15
-	color_legend_w = 0.18
-	color_legend_h = 0.09
+	heatmap_h = 0.7
+	# heatmap_h = min(heatmap_w * hw_ratio, 0.7)
+	dendrogram_l = 0.15 
+	color_legend_w = 0.18 
+	color_legend_h = 0.09 
 	margin = 0.01
 	fig_margin_l = 0.05
-	fig_margin_b = 0.10
+	fig_margin_b = 0.10 
 	## calculate positions for all elements
 	# ax1, placement of dendrogram 1, on the left of the heatmap
 	rect1 = [fig_margin_l, fig_margin_b, dendrogram_l, heatmap_h]
@@ -109,9 +110,9 @@ def clustergram(data=None, row_labels=None, col_labels=None,
 	# axm, placement of heatmap
 	rectm = [fig_margin_l + dendrogram_l + group_bar_w + margin, fig_margin_b, heatmap_w, heatmap_h]
 	# ax2, placement of dendrogram 2, on the top of the heatmap
-	rect2 = [fig_margin_l + dendrogram_l + group_bar_w + margin, fig_margin_b + heatmap_h + group_bar_w, heatmap_w, dendrogram_l] ### last one controls hight of the dendrogram
+	rect2 = [fig_margin_l + dendrogram_l + group_bar_w + margin, fig_margin_b + heatmap_h + group_bar_w + margin, heatmap_w, dendrogram_l] ### last one controls hight of the dendrogram
 	# axcb - placement of the color legend
-	rectcb = [0.05,0.85,0.15,0.08]
+	rectcb = [0.05,0.85,0.10,0.06]
 
 	## plot color legend
 	if type(display_range) == int or type(display_range) == float:
@@ -195,7 +196,7 @@ def clustergram(data=None, row_labels=None, col_labels=None,
 			axr.set_yticks([])
 
 			## axglr: placement for row group label legends
-			axglr = fig.add_axes([0.8, fig_margin_b, 0.05, 0.3], frame_on=False)
+			axglr = fig.add_axes([1- fig_margin_b, fig_margin_b, 0.02, 0.3], frame_on=False)
 			rcbar = fig.colorbar(rmat, cax=axglr, ticks=range(len(d_row_group)))
 			rcbar.set_label('row groups')
 			rcbar.set_ticklabels(d_row_group.keys())
@@ -221,7 +222,7 @@ def clustergram(data=None, row_labels=None, col_labels=None,
 			axc.set_yticks([])
 
 			## axglc: placement for col group label legends
-			axglc = fig.add_axes([0.8, 0.5, 0.05, 0.3], frame_on=False)
+			axglc = fig.add_axes([1- fig_margin_b, 0.5, 0.02, 0.3], frame_on=False)
 			ccbar = fig.colorbar(cmat, cax=axglc, ticks=range(len(d_col_group)))
 			ccbar.set_label('column groups')
 			ccbar.set_ticklabels(d_col_group.keys())
@@ -333,7 +334,6 @@ def collaspe_fclusters(data=None, t=None, row_labels=None, col_labels=None,
 	return data_cf
 
 
-
 def read_matrix(fn, sep='\t'):
 	"""
 	a function that helps quickly import data frame from text file
@@ -350,3 +350,33 @@ def read_matrix(fn, sep='\t'):
 		data = np.array(data, dtype=float)
 	return data, col_labels, row_labels
 
+
+def read_matrix_subset(fn, row_names=None, col_names=None, sep='\t'):
+	"""
+	Only read selected rows/cols in the date frame, specified in row_names/col_names
+
+	"""
+	with open (fn) as f:
+		header = f.next()
+		col_labels = header.strip().split(sep)[1:]
+		col_labels = np.array(col_labels)
+		if col_names is not None:
+			col_mask = []
+			for col_name in col_labels:
+				if col_name in col_names:
+					col_mask.append(True)
+				else:
+					col_mask.append(False)
+		else:
+			col_mask = [True] * len(col_labels)
+		col_mask = np.array(col_mask) ## mask for col labels
+
+		data = []
+		for line in f:
+			sl = line.strip().split('\t')
+			row_name = sl[0]
+			row_values = np.array(sl[1:])
+			if row_names is None or row_name in row_names:
+				data.append(row_values[col_mask])
+		data = np.array(data, dtype=float)
+	return data, col_labels
