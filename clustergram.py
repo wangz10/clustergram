@@ -20,6 +20,10 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 from scipy.stats import zscore
 from collections import Counter
+from matplotlib import rcParams
+rcParams['pdf.fonttype'] = 42 ## Output Type 3 (Type3) or Type 42 (TrueType)
+rcParams['font.sans-serif'] = 'Arial'
+
 
 def clustergram(data=None, row_labels=None, col_labels=None,
 			row_groups=None, col_groups=None, cluster=True,
