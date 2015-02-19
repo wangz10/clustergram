@@ -117,7 +117,6 @@ def clustergram(data=None, row_labels=None, col_labels=None,
 		data = zscore(data, axis=1)
 
 	if colormap == 'redbluecmap':
-		# cmap = plt.cm.bwr
 		cmap = plt.cm.coolwarm
 	elif colormap == 'redgreencmap':
 		cmap = plt.cm.RdYlGn
