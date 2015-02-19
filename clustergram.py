@@ -24,6 +24,41 @@ from matplotlib import rcParams
 rcParams['pdf.fonttype'] = 42 ## Output Type 3 (Type3) or Type 42 (TrueType)
 rcParams['font.sans-serif'] = 'Arial'
 
+global COLORS10, COLORS20
+COLORS10 = [
+'#1f77b4',
+'#ff7f0e',
+'#2ca02c',
+'#d62728',
+'#9467bd',
+'#8c564b',
+'#e377c2',
+'#7f7f7f',
+'#bcbd22',
+'#17becf',
+]
+COLORS20 = [
+'#1f77b4',
+'#aec7e8',
+'#ff7f0e',
+'#ffbb78',
+'#2ca02c',
+'#98df8a',
+'#d62728',
+'#ff9896',
+'#9467bd',
+'#c5b0d5',
+'#8c564b',
+'#c49c94',
+'#e377c2',
+'#f7b6d2',
+'#7f7f7f',
+'#c7c7c7',
+'#bcbd22',
+'#dbdb8d',
+'#17becf',
+'#9edae5',
+]
 
 def clustergram(data=None, row_labels=None, col_labels=None,
 			row_groups=None, col_groups=None, cluster=True,
@@ -82,7 +117,8 @@ def clustergram(data=None, row_labels=None, col_labels=None,
 		data = zscore(data, axis=1)
 
 	if colormap == 'redbluecmap':
-		cmap = plt.cm.bwr
+		# cmap = plt.cm.bwr
+		cmap = plt.cm.coolwarm
 	elif colormap == 'redgreencmap':
 		cmap = plt.cm.RdYlGn
 	elif colormap == 'grey':
@@ -187,8 +223,13 @@ def clustergram(data=None, row_labels=None, col_labels=None,
 				d_row_group[group_name] = i
 
 			colors_row_groups = []
-			for i in range(len(d_row_group)):
-				colors_row_groups.append(np.random.rand(3,1)) 
+			if len(d_row_group) < 11:
+				colors_row_groups = COLORS10[0:len(d_row_group)]
+			elif len(d_row_group) < 21:
+				colors_row_groups = COLORS20[0:len(d_row_group)]
+			else:
+				for i in range(len(d_row_group)):
+					colors_row_groups.append(np.random.rand(3,1)) 
 			cmap_row_groups = mpl.colors.ListedColormap(colors_row_groups) ## make color lists into cmap for matshow
 
 			## row group color label:
@@ -214,8 +255,13 @@ def clustergram(data=None, row_labels=None, col_labels=None,
 			
 			## config group colors and cmaps
 			colors_col_groups = []
-			for i in range(len(d_col_group)):
-				colors_col_groups.append(np.random.rand(3,1)) ## a list of random colors
+			if len(d_col_group) < 11:
+				colors_col_groups = COLORS10[0:len(d_col_group)]
+			elif len(d_col_group) < 21:
+				colors_col_groups = COLORS20[0:len(d_col_group)]
+			else:
+				for i in range(len(d_col_group)):
+					colors_col_groups.append(np.random.rand(3,1)) 
 			cmap_col_groups = mpl.colors.ListedColormap(colors_col_groups)
 
 			axc = fig.add_axes(rectc)
