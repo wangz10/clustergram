@@ -13,6 +13,7 @@ References:
 https://code.activestate.com/recipes/578834-hierarchical-clustering-heatmap-python/
 http://www.mathworks.com/help/bioinfo/ref/clustergram.html
 """
+from collections import OrderedDict
 import numpy as np
 import scipy.cluster.hierarchy as sch
 import scipy.spatial.distance as dist
@@ -217,7 +218,7 @@ def clustergram(data=None, row_labels=None, col_labels=None,
 		# numerize group names
 		if row_groups != None:
 			uniq_row_groups = list(set(row_groups))
-			d_row_group = {} 
+			d_row_group = OrderedDict() 
 			for i, group_name in enumerate(uniq_row_groups):
 				d_row_group[group_name] = i
 
@@ -248,7 +249,7 @@ def clustergram(data=None, row_labels=None, col_labels=None,
 
 		if col_groups != None:
 			uniq_col_groups = list(set(col_groups))
-			d_col_group = {} 
+			d_col_group = OrderedDict() 
 			for i, group_name in enumerate(uniq_col_groups):
 				d_col_group[group_name] = i
 			
