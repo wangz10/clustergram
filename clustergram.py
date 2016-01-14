@@ -214,75 +214,16 @@ def clustergram(data=None, row_labels=None, col_labels=None,
 					axm.text(i, -0.8, ' '+ col_labels[idx2[i]], rotation=270, verticalalignment="top") # rotation could also be degrees
 					new_column_header.append(col_labels[idx2[i]])
 
-		## plot group colors
-		# numerize group names
-		if row_groups != None:
-			uniq_row_groups = list(set(row_groups))
-			d_row_group = OrderedDict() 
-			for i, group_name in enumerate(uniq_row_groups):
-				d_row_group[group_name] = i
-
-			colors_row_groups = []
-			if len(d_row_group) < 11:
-				colors_row_groups = COLORS10[0:len(d_row_group)]
-			elif len(d_row_group) < 21:
-				colors_row_groups = COLORS20[0:len(d_row_group)]
-			else:
-				for i in range(len(d_row_group)):
-					colors_row_groups.append(np.random.rand(3,1)) 
-			cmap_row_groups = mpl.colors.ListedColormap(colors_row_groups) ## make color lists into cmap for matshow
-
-			## row group color label:
-			axr = fig.add_axes(rectr)
-			new_row_group = np.array([d_row_group[row_groups[idx1[i]]] for i in range(data.shape[0])])
-			new_row_group.shape = (len(idx1), 1)
-			rmat = axr.matshow(new_row_group, aspect='auto', origin='lower', cmap=cmap_row_groups)
-			axr.set_xticks([])
-			axr.set_yticks([])
-
-			## axglr: placement for row group label legends
-			axglr = fig.add_axes([1- fig_margin_b, fig_margin_b, 0.02, 0.3], frame_on=False)
-			rcbar = fig.colorbar(rmat, cax=axglr, ticks=range(len(d_row_group)))
-			rcbar.set_label('row groups')
-			rcbar.set_ticklabels(d_row_group.keys())
-			rcbar.update_ticks()
-
-		if col_groups != None:
-			uniq_col_groups = list(set(col_groups))
-			d_col_group = OrderedDict() 
-			for i, group_name in enumerate(uniq_col_groups):
-				d_col_group[group_name] = i
-			
-			## config group colors and cmaps
-			colors_col_groups = []
-			if len(d_col_group) < 11:
-				colors_col_groups = COLORS10[0:len(d_col_group)]
-			elif len(d_col_group) < 21:
-				colors_col_groups = COLORS20[0:len(d_col_group)]
-			else:
-				for i in range(len(d_col_group)):
-					colors_col_groups.append(np.random.rand(3,1)) 
-			cmap_col_groups = mpl.colors.ListedColormap(colors_col_groups)
-
-			axc = fig.add_axes(rectc)
-			new_col_group = np.array([d_col_group[col_groups[idx2[i]]] for i in range(data.shape[1])])
-			new_col_group.shape = (1, len(idx2))	
-			cmat = axc.matshow(new_col_group, aspect='auto', origin='lower', cmap=cmap_col_groups)
-			axc.set_xticks([])
-			axc.set_yticks([])
-
-			## axglc: placement for col group label legends
-			axglc = fig.add_axes([1- fig_margin_b, 0.5, 0.02, 0.3], frame_on=False)
-			ccbar = fig.colorbar(cmat, cax=axglc, ticks=range(len(d_col_group)))
-			ccbar.set_label('column groups')
-			ccbar.set_ticklabels(d_col_group.keys())
-			ccbar.update_ticks()
 	else: ## not performing hierachical clustering
 		## plot heatmap
 		axm = fig.add_axes(rectm)
 		im = axm.matshow(data, aspect='auto', origin='lower',cmap=cmap, norm=norm)
 		axm.set_xticks([])
 		axm.set_yticks([])
+
+		## the index vecter for the original order
+		idx2 = range(data.shape[1])
+		idx1 = range(data.shape[0])
 
 		## add labels
 		if row_labels is not None:
@@ -293,6 +234,72 @@ def clustergram(data=None, row_labels=None, col_labels=None,
 			if len(col_labels) < 150:
 				for i in range(data.shape[1]):
 					axm.text(i, -0.8, ' '+ col_labels[i], rotation=270, verticalalignment="top") # rotation could also be degrees
+
+	## plot group colors
+	# numerize group names
+	if row_groups != None:
+		uniq_row_groups = list(set(row_groups))
+		d_row_group = OrderedDict() 
+		for i, group_name in enumerate(uniq_row_groups):
+			d_row_group[group_name] = i
+
+		colors_row_groups = []
+		if len(d_row_group) < 11:
+			colors_row_groups = COLORS10[0:len(d_row_group)]
+		elif len(d_row_group) < 21:
+			colors_row_groups = COLORS20[0:len(d_row_group)]
+		else:
+			for i in range(len(d_row_group)):
+				colors_row_groups.append(np.random.rand(3,1)) 
+		cmap_row_groups = mpl.colors.ListedColormap(colors_row_groups) ## make color lists into cmap for matshow
+
+		## row group color label:
+		axr = fig.add_axes(rectr)
+		new_row_group = np.array([d_row_group[row_groups[idx1[i]]] for i in range(data.shape[0])])
+		new_row_group.shape = (len(idx1), 1)
+		rmat = axr.matshow(new_row_group, aspect='auto', origin='lower', cmap=cmap_row_groups)
+		axr.set_xticks([])
+		axr.set_yticks([])
+
+		## axglr: placement for row group label legends
+		axglr = fig.add_axes([1- fig_margin_b, fig_margin_b, 0.02, 0.3], frame_on=False)
+		rcbar = fig.colorbar(rmat, cax=axglr, ticks=range(len(d_row_group)))
+		rcbar.set_label('row groups')
+		rcbar.set_ticklabels(d_row_group.keys())
+		rcbar.update_ticks()
+
+	if col_groups != None:
+		uniq_col_groups = list(set(col_groups))
+		d_col_group = OrderedDict() 
+		for i, group_name in enumerate(uniq_col_groups):
+			d_col_group[group_name] = i
+		
+		## config group colors and cmaps
+		colors_col_groups = []
+		if len(d_col_group) < 11:
+			colors_col_groups = COLORS10[0:len(d_col_group)]
+		elif len(d_col_group) < 21:
+			colors_col_groups = COLORS20[0:len(d_col_group)]
+		else:
+			for i in range(len(d_col_group)):
+				colors_col_groups.append(np.random.rand(3,1)) 
+		cmap_col_groups = mpl.colors.ListedColormap(colors_col_groups)
+
+		axc = fig.add_axes(rectc)
+		new_col_group = np.array([d_col_group[col_groups[idx2[i]]] for i in range(data.shape[1])])
+		new_col_group.shape = (1, len(idx2))	
+		cmat = axc.matshow(new_col_group, aspect='auto', origin='lower', cmap=cmap_col_groups)
+		axc.set_xticks([])
+		axc.set_yticks([])
+
+		## axglc: placement for col group label legends
+		axglc = fig.add_axes([1- fig_margin_b, 0.5, 0.02, 0.3], frame_on=False)
+		ccbar = fig.colorbar(cmat, cax=axglc, ticks=range(len(d_col_group)))
+		ccbar.set_label('column groups')
+		ccbar.set_ticklabels(d_col_group.keys())
+		ccbar.update_ticks()
+
+
 	if figname != None:
 		plt.savefig(figname)
 	else:
